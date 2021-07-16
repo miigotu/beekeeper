@@ -23,6 +23,17 @@ Then, from within Python, we'll need to import beekeeper and initialize the FooB
 .. code:: python
 
     >>> from beekeeper import API
+
+        >>> fbv = API.from_domain('foobar.com')
+
+    Note that if FooBar Ventures served their API over HTTP rather than over HTTPS,
+    you'd need to set the "require_https" keyword argument to False to prevent beekeeper
+    from raising an exception. Because hive files change the behavior of your
+    application, secure transmission is really important. If you're possibly
+    going to be passing sensitive information with your application, and the API
+    provider doesn't host their hive using HTTP, it may be better for you to download
+    their hive yourself, inspect it, include it with your application, and then
+    initialize with a statement like this:
     
     >>> fbv = API.from_domain('foobar.com')
 

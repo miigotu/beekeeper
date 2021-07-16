@@ -3,16 +3,16 @@ This module contains all the beekeeper classes that are used on the front end
 to directly interface between the developer and the remote API.
 """
 
-from __future__ import absolute_import, division
-from __future__ import unicode_literals, print_function
+from __future__ import division
 
 import copy
 from functools import partial
 from keyword import iskeyword
 
-from beekeeper.variables import Variables
-from beekeeper.hive import Hive
 from beekeeper.comms import Request
+from beekeeper.hive import Hive
+from beekeeper.variables import Variables
+
 
 class Endpoint(object):
 
@@ -23,9 +23,9 @@ class Endpoint(object):
     def __init__(self, parent, path, **kwargs):
         self.parent = parent
         self.path = path
-        self.vars = Variables(**kwargs.get('variables', {}))
-        self.methods = kwargs.get('methods', ['GET'])
-        self.mimetype = kwargs.get('mimetype', None)
+        self.vars = Variables(**kwargs.get("variables", {}))
+        self.methods = kwargs.get("methods", ["GET"])
+        self.mimetype = kwargs.get("mimetype", None)
 
     def variables(self):
         """
@@ -39,12 +39,12 @@ class Endpoint(object):
         """
         return self.parent.base_url() + self.path
 
-    def new_action(self, method='GET', **kwargs):
+    def new_action(self, method="GET", **kwargs):
         """
         Create a new Action linked to this endpoint with the given args.
         """
         if method not in self.methods:
-            raise TypeError('{} not in valid method(s): {}.'.format(method, self.methods))
+            raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         return Action(self, method, **kwargs)
 
     def format(self):
@@ -57,6 +57,7 @@ class Endpoint(object):
         else:
             return self.parent.format()
 
+
 class APIObject(object):
 
     """
@@ -65,10 +66,10 @@ class APIObject(object):
     """
 
     def __init__(self, parent, actions, **kwargs):
-        self._description = kwargs.get('description', None)
-        self._id_variable = kwargs.get('id_variable', None)
+        self._description = kwargs.get("description", None)
+        self._id_variable = kwargs.get("id_variable", None)
         if iskeyword(self._id_variable):
-            self._id_variable = '_' + self._id_variable
+            self._id_variable = "_" + self._id_variable
         self._actions = {}
         for name, action in actions.items():
             self.add_action(name, parent, action)
@@ -80,7 +81,7 @@ class APIObject(object):
         """
         if self._id_variable:
             return APIObjectInstance(self, key)
-        raise TypeError('Object cannot be addressed by ID')
+        raise TypeError("Object cannot be addressed by ID")
 
     def defined_actions(self):
         """
@@ -93,7 +94,7 @@ class APIObject(object):
         Add a single Action to the APIObject.
         """
         if iskeyword(name):
-            name = '_' + name
+            name = "_" + name
         self._actions[name] = parent.new_action(**action)
         setattr(self, name, self._actions[name].execute)
 
@@ -101,15 +102,15 @@ class APIObject(object):
         """
         Create a string describing the APIObject and its children
         """
-        out = ''
-        out += '|\n'
+        out = ""
+        out += "|\n"
         if self._id_variable:
-            subs = '[{}]'.format(self._id_variable)
+            subs = "[{}]".format(self._id_variable)
         else:
-            subs = ''
-        out += '|---{}{}\n'.format(name, subs)
+            subs = ""
+        out += "|---{}{}\n".format(name, subs)
         if self._description:
-            out += '|   |   {}\n'.format(self._description)
+            out += "|   |   {}\n".format(self._description)
         for name, action in self._actions.items():
             out += action.printed_out(name)
         return out
@@ -119,6 +120,7 @@ class APIObject(object):
         Get the name of the variable that this particular APIObject can be subscripted by
         """
         return self._id_variable
+
 
 class APIObjectInstance(object):
     """
@@ -156,6 +158,7 @@ class APIObjectInstance(object):
         action = getattr(self._api_object, name)
         return partial(action, **{self._id_variable: self._id_key})
 
+
 class Action(object):
 
     """
@@ -165,12 +168,12 @@ class Action(object):
     def __init__(self, endpoint, method, **kwargs):
         self.endpoint = endpoint
         self.method = method
-        self.vars = Variables(**kwargs.get('variables', {}))
-        self.mimetype = kwargs.get('mimetype', None)
+        self.vars = Variables(**kwargs.get("variables", {}))
+        self.mimetype = kwargs.get("mimetype", None)
         self.url = endpoint.url
-        self.description = kwargs.get('description', None)
-        self.traversal = kwargs.get('traverse', None)
-        self.timeout = kwargs.get('timeout', 5)
+        self.description = kwargs.get("description", None)
+        self.traversal = kwargs.get("traverse", None)
+        self.timeout = kwargs.get("timeout", 5)
 
     def variables(self):
         """
@@ -185,15 +188,10 @@ class Action(object):
         and send it. If we set the _verbose kwarg to true, then we'll
         get a Response object back instead of loaded data.
         """
-        _verbose = kwargs.pop('_verbose', False)
-        return_full_object = kwargs.pop('return_full_object', False)
+        _verbose = kwargs.pop("_verbose", False)
+        return_full_object = kwargs.pop("return_full_object", False)
         variables = self.variables().fill(*args, **kwargs)
-        return Request(self, variables).send(
-            traversal=self.traversal,
-            _verbose=_verbose,
-            return_full_object=return_full_object,
-            _timeout=self.timeout
-        )
+        return Request(self, variables).send(traversal=self.traversal, _verbose=_verbose, return_full_object=return_full_object, _timeout=self.timeout)
 
     def format(self):
         """
@@ -211,12 +209,13 @@ class Action(object):
         """
         opt = self.variables().optional_namestring()
         req = self.variables().required_namestring()
-        out = ''
-        out += '|   |\n'
-        out += '|   |---{}({}{})\n'.format(name, req, opt)
+        out = ""
+        out += "|   |\n"
+        out += "|   |---{}({}{})\n".format(name, req, opt)
         if self.description:
-            out += '|   |       {}\n'.format(self.description)
+            out += "|   |       {}\n".format(self.description)
         return out
+
 
 class API(object):
 
@@ -225,19 +224,16 @@ class API(object):
     """
 
     def __init__(self, hive, *args, **kwargs):
-        self._root = hive.get('root')
-        self._mimetype = hive.get('mimetype', 'application/json')
-        self._vars = Variables(
-            variable_settings=hive.get('variable_settings', {}),
-            **hive.get('variables', {})
-            ).fill(*args, **kwargs)
+        self._root = hive.get("root")
+        self._mimetype = hive.get("mimetype", "application/json")
+        self._vars = Variables(variable_settings=hive.get("variable_settings", {}), **hive.get("variables", {})).fill(*args, **kwargs)
         self._endpoints = {}
-        self._description = hive.get('description', None)
-        self._name = hive.get('name', None)
+        self._description = hive.get("description", None)
+        self._name = hive.get("name", None)
         self._objects = {}
-        for name, endpoint in hive['endpoints'].items():
+        for name, endpoint in hive["endpoints"].items():
             self.add_endpoint(name, **endpoint)
-        for name, obj in hive['objects'].items():
+        for name, obj in hive["objects"].items():
             self.add_object(name, obj)
 
     @classmethod
@@ -246,8 +242,8 @@ class API(object):
         Open a local JSON hive file and initialize from the hive contained
         in that file, paying attention to the version keyword argument.
         """
-        version = kwargs.pop('version', None)
-        require = kwargs.pop('require_https', True)
+        version = kwargs.pop("version", None)
+        require = kwargs.pop("require_https", True)
         return cls(Hive.from_file(fname, version, require), *args, **kwargs)
 
     @classmethod
@@ -256,8 +252,8 @@ class API(object):
         Download a JSON hive file from a URL, and initialize from it,
         paying attention to the version keyword argument.
         """
-        version = kwargs.pop('version', None)
-        require = kwargs.pop('require_https', False)
+        version = kwargs.pop("version", None)
+        require = kwargs.pop("require_https", False)
         return cls(Hive.from_url(url, version, require), *args, **kwargs)
 
     @classmethod
@@ -266,17 +262,17 @@ class API(object):
         Try to download the hive file from the domain using the defined
         beekeeper spec of domain/api/hive.json.
         """
-        version = kwargs.pop('version', None)
-        require = kwargs.pop('require_https', False)
+        version = kwargs.pop("version", None)
+        require = kwargs.pop("require_https", False)
         return cls(Hive.from_domain(domain, version, require), *args, **kwargs)
 
     def __repr__(self):
-        out = ''
+        out = ""
         req_var = self.variables().required_namestring()
         opt_var = self.variables().optional_namestring()
-        out += '{}({}{})\n'.format(self._name, req_var, opt_var)
+        out += "{}({}{})\n".format(self._name, req_var, opt_var)
         if self._description:
-            out += '|   {}\n'.format(self._description)
+            out += "|   {}\n".format(self._description)
         for name, obj in self._objects.items():
             out += obj.printed_out(name)
         return out
@@ -299,7 +295,7 @@ class API(object):
         using dot notation from the top-level namespace.
         """
         if iskeyword(name):
-            name = '_' + name
+            name = "_" + name
         setattr(self, name, APIObject(self, **obj))
         self._objects[name] = getattr(self, name)
 

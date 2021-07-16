@@ -2,66 +2,43 @@
 Provides classes and methods related to communicating with the remote API
 """
 
-from __future__ import absolute_import, division
-from __future__ import unicode_literals, print_function
+from __future__ import division
 
-try:
-    from urllib2 import Request as Py2Request, HTTPError, URLError
-    from urllib2 import build_opener, HTTPCookieProcessor
-    from urllib import urlencode
-    import httplib
-    import cookielib
-    pyversion = 2
-
-except ImportError:
-    from urllib.request import Request as PythonRequest, build_opener
-    from urllib.request import HTTPCookieProcessor
-    from urllib.error import HTTPError, URLError
-    from urllib.parse import urlencode
-    import http.client as httplib
-    import http.cookiejar as cookielib
-    pyversion = 3
-
-import socket
 import functools
+import http.client as httplib
+import http.cookiejar as cookielib
+import socket
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import build_opener, HTTPCookieProcessor, Request as PythonRequest
 
-from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
-from beekeeper.exceptions import TraversalError, TooMuchBodyData, RequestTimeout
-
-if pyversion == 2:
-    class PythonRequest(Py2Request):
-
-        def __init__(self, *args, **kwargs):
-            self._method = kwargs.pop('method', None)
-            Py2Request.__init__(self, *args, **kwargs)
-
-        def get_method(self):
-            return self._method if self._method else super(PythonRequest, self).get_method()
-elif pyversion == 3:
-    basestring = str
-
+from beekeeper.exceptions import RequestTimeout, TooMuchBodyData, TraversalError
+from beekeeper.variable_handlers import render
 
 COOKIE_JAR = cookielib.CookieJar()
 REQUEST_OPENER = build_opener(HTTPCookieProcessor(COOKIE_JAR))
+
 
 def download_as_json(url):
     """
     Download the data at the URL and load it as JSON
     """
     try:
-        return Response('application/json', request(url=url)).read()
+        return Response("application/json", request(url=url)).read()
     except HTTPError as err:
-        raise ResponseException('application/json', err)
+        raise ResponseException("application/json", err)
+
 
 def request(*args, **kwargs):
     """
     Make a request with the received arguments and return an
     HTTPResponse object
     """
-    timeout = kwargs.pop('timeout', 5)
+    timeout = kwargs.pop("timeout", 5)
     req = PythonRequest(*args, **kwargs)
     return REQUEST_OPENER.open(req, timeout=timeout)
+
 
 class Request(object):
 
@@ -75,11 +52,7 @@ class Request(object):
         self.url = self.action.endpoint.url()
         self.replacements = {}
         self.params = {}
-        self.output = {
-            'data': None,
-            'headers': {},
-            'method': self.action.method
-        }
+        self.output = {"data": None, "headers": {}, "method": self.action.method}
         for var_type in variables.types():
             render(self, var_type, **variables.vals(var_type))
 
@@ -87,11 +60,11 @@ class Request(object):
         """
         Send the request defined by the data stored in the object.
         """
-        return_full_object = kwargs.get('return_full_object', False)
-        _verbose = kwargs.get('_verbose', False)
-        traversal = kwargs.get('traversal', None)
-        timeout = kwargs.get('_timeout', 5)
-        self.output['url'] = self.render_url()
+        return_full_object = kwargs.get("return_full_object", False)
+        _verbose = kwargs.get("_verbose", False)
+        traversal = kwargs.get("traversal", None)
+        timeout = kwargs.get("_timeout", 5)
+        self.output["url"] = self.render_url()
         with VerboseContextManager(verbose=_verbose):
             try:
                 resp = Response(self.action.format(), request(timeout=timeout, **self.output), traversal)
@@ -111,13 +84,13 @@ class Request(object):
             return resp.read()
 
     def set_headers(self, **headers):
-        self.output['headers'].update(headers)
+        self.output["headers"].update(headers)
 
     def set_data(self, data, override=False):
-        if self.output['data'] is None or override:
-            self.output['data'] = data
+        if self.output["data"] is None or override:
+            self.output["data"] = data
         else:
-            raise TooMuchBodyData(self.output['data'], data)
+            raise TooMuchBodyData(self.output["data"], data)
 
     def set_url_params(self, **params):
         self.params.update(params)
@@ -131,8 +104,9 @@ class Request(object):
         """
         url = self.url.format(**self.replacements)
         if self.params:
-            return url + '?' + urlencode(self.params)
+            return url + "?" + urlencode(self.params)
         return url
+
 
 class Response(object):
 
@@ -155,18 +129,18 @@ class Response(object):
         the ";charset=xxxxx" portion if necessary. If we can't
         find it, use the predefined format.
         """
-        if ';' in self.headers.get('Content-Type', ''):
-            return self.headers['Content-Type'].split(';')[0]
-        return self.headers.get('Content-Type', self.static_format)
+        if ";" in self.headers.get("Content-Type", ""):
+            return self.headers["Content-Type"].split(";")[0]
+        return self.headers.get("Content-Type", self.static_format)
 
     def encoding(self):
         """
         Look for a "charset=" variable in the Content-Type header;
         if it's not there, just return a default value of UTF-8
         """
-        if 'charset=' in self.headers.get('Content-Type', ''):
-            return self.headers['Content-Type'].split('charset=')[1].split(';')[0]
-        return 'utf-8'
+        if "charset=" in self.headers.get("Content-Type", ""):
+            return self.headers["Content-Type"].split("charset=")[1].split(";")[0]
+        return "utf-8"
 
     def read(self, raw=False, perform_traversal=True):
         """
@@ -182,6 +156,7 @@ class Response(object):
         else:
             return self.data
 
+
 def traverse(obj, *path, **kwargs):
     """
     Traverse the object we receive with the given path. Path
@@ -191,55 +166,56 @@ def traverse(obj, *path, **kwargs):
     """
     if path:
         if isinstance(obj, list) or isinstance(obj, tuple):
-            #If the current state of the object received is a
-            #list, return a list of each of its children elements,
-            #traversed with the current state of the string
+            # If the current state of the object received is a
+            # list, return a list of each of its children elements,
+            # traversed with the current state of the string
             return [traverse(x, *path) for x in obj]
         elif isinstance(obj, dict):
-            #If the current state of the object received is a
-            #dictionary, do the following...
+            # If the current state of the object received is a
+            # dictionary, do the following...
             if isinstance(path[0], list) or isinstance(path[0], tuple):
-                #If the current top item in the path is a list,
-                #return a dictionary with keys to each of the
-                #items in the list, each traversed recursively.
+                # If the current top item in the path is a list,
+                # return a dictionary with keys to each of the
+                # items in the list, each traversed recursively.
                 for branch in path[0]:
-                    if not isinstance(branch, basestring):
+                    if not isinstance(branch, str):
                         raise TraversalError(obj, path[0])
                 return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
-            elif not isinstance(path[0], basestring):
-                #If the key isn't a string (or a list; handled
-                #previously), raise an exception.
+            elif not isinstance(path[0], str):
+                # If the key isn't a string (or a list; handled
+                # previously), raise an exception.
                 raise TraversalError(obj, path[0])
-            elif path[0] == '\\*':
-                #If the key is a wildcard, return a dict containing
-                #each item, traversed down recursively.
+            elif path[0] == "\\*":
+                # If the key is a wildcard, return a dict containing
+                # each item, traversed down recursively.
                 return {name: traverse(item, *path[1:], split=True) for name, item in obj.items()}
             elif path[0] in obj:
-                #The individual key is in the current object;
-                #traverse it and return the result.
+                # The individual key is in the current object;
+                # traverse it and return the result.
                 return traverse(obj[path[0]], *path[1:])
             else:
-                #The individual key doesn't exist in the
-                #current object; raise an error
+                # The individual key doesn't exist in the
+                # current object; raise an error
                 raise TraversalError(obj, path[0])
         else:
-            #If the current object isn't either a list or
-            #a dict, then do one of two things:
-            if kwargs.get('split', False):
-                #If the previously-recursed operation caused
-                #a split in a dict, just return the object; it's
-                #been specifically called out, but it isn't
-                #possible to recurse further.
+            # If the current object isn't either a list or
+            # a dict, then do one of two things:
+            if kwargs.get("split", False):
+                # If the previously-recursed operation caused
+                # a split in a dict, just return the object; it's
+                # been specifically called out, but it isn't
+                # possible to recurse further.
                 return obj
             else:
-                #The object can't be traversed, and we didn't
-                #specifically call it out to do something
-                #else with. Raise an exception.
+                # The object can't be traversed, and we didn't
+                # specifically call it out to do something
+                # else with. Raise an exception.
                 raise TraversalError(obj, path[0])
     else:
-        #If there's no path left, then just return the
-        #object that we received.
+        # If there's no path left, then just return the
+        # object that we received.
         return obj
+
 
 class ResponseException(Response, Exception):
     """
@@ -253,7 +229,8 @@ class ResponseException(Response, Exception):
         Response.__init__(self, static_format, response, traversal=None)
 
     def __str__(self):
-        return 'Error message: {}/{}'.format(self.code, self.message)
+        return "Error message: {}/{}".format(self.code, self.message)
+
 
 class VerboseContextManager(object):
     """

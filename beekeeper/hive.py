@@ -2,8 +2,7 @@
 Provides the Hive class to work with JSON hive files, both remotely
 retrieved and opened from a local file
 """
-from __future__ import absolute_import, division
-from __future__ import unicode_literals, print_function
+from __future__ import division
 
 try:
     from urllib2 import URLError
@@ -14,8 +13,8 @@ import json
 import os
 
 from beekeeper.comms import download_as_json, ResponseException
-from beekeeper.exceptions import MissingHive, VersionNotInHive
-from beekeeper.exceptions import HiveLoadedOverHTTP
+from beekeeper.exceptions import HiveLoadedOverHTTP, MissingHive, VersionNotInHive
+
 
 class Hive(dict):
 
@@ -64,11 +63,11 @@ class Hive(dict):
         Try to find a hive for the given domain; raise an error if we have to
         failover to HTTP and haven't explicitly suppressed it in the call.
         """
-        url = 'https://' + domain + '/api/hive.json'
+        url = "https://" + domain + "/api/hive.json"
         try:
             return cls.from_url(url, version=version, require_https=require_https)
         except MissingHive:
-            url = 'http://' + domain + '/api/hive.json'
+            url = "http://" + domain + "/api/hive.json"
             return cls.from_url(url, version=version, require_https=require_https)
 
     def from_version(self, version, require_https=False):
@@ -86,18 +85,18 @@ class Hive(dict):
         Retrieve the URL for the designated version of the hive.
         """
         for each_version in self.other_versions():
-            if version == each_version['version'] and 'location' in each_version:
-                return each_version.get('location')
+            if version == each_version["version"] and "location" in each_version:
+                return each_version.get("location")
         raise VersionNotInHive(version)
 
     def version(self):
         """
         Retrieve the current hive's version, if present.
         """
-        return self.get('versioning', {}).get('version', None)
+        return self.get("versioning", {}).get("version", None)
 
     def other_versions(self):
         """
         Generate a list of other versions in the hive.
         """
-        return self.get('versioning', {}).get('other_versions', [])
+        return self.get("versioning", {}).get("other_versions", [])

@@ -1,12 +1,16 @@
 [tool.poetry]
-name = "beekeeper"
-version = "0.1.0"
+name = "beekeeper-alt"
+version = "2021.7.16"
 description = "beekeeper is a Python library designed around dynamically generating a RESTful client interface based on a minimal JSON hive"
 keywords = ["REST", "API", "web", "client", "wrapper"]
 authors = [
     "Jesse Shapiro <jesse@bedrockdata.com>"]
 maintainers = [
     "Dustyn Gibson <miigotu@gmail.com>"
+]
+
+packages = [
+    { include = "beekeeper" }
 ]
 
 repository = "https://github.com/miigotu/beekeeper"
@@ -38,7 +42,6 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.6.2,<4"
 xmltodict = ">=0.9.2"
-black = "^21.6-beta.0"
 
 [tool.poetry.dev-dependencies]
 black = "^21.6-beta.0"
@@ -55,6 +58,7 @@ flake8-docstrings = "^1.6.0"
 codecov = "^2.1.11"
 pytest = "^6.2.4"
 poethepoet = "^0.10.0"
+poetry-date-version-plugin = ">=2021.7.16-6"
 
 [build-system]
 requires = ["poetry-core"]
@@ -143,3 +147,11 @@ test = [
     { ref = "lint" },
     { cmd = "pytest" }
 ]
+
+
+[tool.poetry.plugins."poetry.application.plugin"]
+plugin = "poetry_date_version_plugin.plugin:VersionPlugin"
+
+[tool.version-plugin]
+write_to = 'beekeeper/__init__.py'
+regex = '__version__ = "{version}"'

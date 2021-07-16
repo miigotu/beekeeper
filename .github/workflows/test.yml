@@ -1,0 +1,78 @@
+name: Python Packaging
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  Test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9, pypy3]
+        experimental: [false]
+        include:
+          - os: windows-latest
+            python-version: 3.9
+            experimental: true
+          - os: macos-latest
+            python-version: 3.9
+            experimental: true
+      fail-fast: true
+    continue-on-error: ${{ matrix.experimental }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Cancel Previous Runs
+        if: success() && !env.ACT
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+      - name: Checkout
+        if: success() && !env.ACT
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Restore pip cache
+        if: success() && !env.ACT
+        uses: actions/cache@v2
+        with:
+          path: $(python -m pip cache dir)
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+      - name: Restore poetry cache
+        if: success() && !env.ACT
+        uses: actions/cache@v2
+        with:
+          path: $(poetry config cache-dir)
+          key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Restore virtualenv
+        if: success() && !env.ACT
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: ${{ runner.os }}-virtualenv-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --no-root
+          pip install poethepoet
+        shell: bash
+      - name: Lint Python
+        if: success() && startsWith(runner.os, 'Linux') && matrix.python-version == 3.9
+        run: poe lint
+        shell: bash
+      - name: Test Python
+        run: |
+          poe pytest
+          poe codecov -e OS=${{ runner.os }} Interpreter="$(poetry run python -V)" -t ${{ secrets.CODECOV_TOKEN }}
+        shell: bash

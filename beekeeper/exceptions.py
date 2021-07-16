@@ -2,6 +2,7 @@
 This module holds most of the exceptions we use on a day-to-day basis. Woo.
 """
 
+
 class TooMuchBodyData(Exception):
     """
     The error we raise if the application is trying to send more than
@@ -13,15 +14,16 @@ class TooMuchBodyData(Exception):
         self.newdata = newdata
 
     def __str__(self):
-        return 'Only one request body can be sent.'
+        return "Only one request body can be sent."
+
 
 class RequestTimeout(Exception):
-
     def __init__(self, retry_method):
         self.retry = retry_method
 
     def __str__(self):
         return "Request timed out"
+
 
 class MissingHive(Exception):
     """
@@ -33,7 +35,8 @@ class MissingHive(Exception):
         self.location = location
 
     def __str__(self):
-        return 'Could not open hive at {}'.format(self.location)
+        return "Could not open hive at {}".format(self.location)
+
 
 class VersionNotInHive(Exception):
     """
@@ -45,14 +48,16 @@ class VersionNotInHive(Exception):
         self.version = version
 
     def __str__(self):
-        return 'Could not find location for version {}'.format(self.version)
+        return "Could not find location for version {}".format(self.version)
+
 
 class CannotHandleVariableTypes(Exception):
     def __init__(self, *types):
         self.types = types
 
     def __str__(self):
-        return 'Cannot handle variable type(s) {}'.format(self.types)
+        return "Cannot handle variable type(s) {}".format(self.types)
+
 
 class TraversalError(Exception):
     """
@@ -66,7 +71,7 @@ class TraversalError(Exception):
         self.key = key
 
     def __str__(self):
-        return 'Could not traverse object {} with key {}'.format(self.top_level(), repr(self.key))
+        return "Could not traverse object {} with key {}".format(self.top_level(), repr(self.key))
 
     def top_level(self):
         """
@@ -78,19 +83,20 @@ class TraversalError(Exception):
             for name, item in self.obj.items():
                 if isinstance(item, dict):
                     if item:
-                        output[name] = StrReprWrapper('{...}')
+                        output[name] = StrReprWrapper("{...}")
                     else:
-                        output[name] = StrReprWrapper('{}')
+                        output[name] = StrReprWrapper("{}")
                 elif isinstance(item, list):
                     if item:
-                        output[name] = StrReprWrapper('[...]')
+                        output[name] = StrReprWrapper("[...]")
                     else:
-                        output[name] = StrReprWrapper('[]')
+                        output[name] = StrReprWrapper("[]")
                 else:
                     output[name] = item
             return output
         else:
             return self.obj
+
 
 class StrReprWrapper(str):
     """
@@ -100,6 +106,7 @@ class StrReprWrapper(str):
 
     def __repr__(self):
         return self
+
 
 class HiveLoadedOverHTTP(Exception):
     """
@@ -113,6 +120,6 @@ class HiveLoadedOverHTTP(Exception):
         self.hive = hive
 
     def __str__(self):
-        val = 'Hive was fetched insecurely over HTTP from URL {}'
+        val = "Hive was fetched insecurely over HTTP from URL {}"
         val = val.format(self.url)
         return val

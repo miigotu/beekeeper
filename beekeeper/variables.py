@@ -2,17 +2,17 @@
 Provides methods and classes that handle working with variables
 """
 
-from __future__ import absolute_import, division
-from __future__ import unicode_literals, print_function
+from __future__ import division
 
+from copy import deepcopy
 from functools import partial
 from keyword import iskeyword
-from copy import deepcopy
 
-from beekeeper.variable_handlers import VariableHandler
 from beekeeper.exceptions import CannotHandleVariableTypes
+from beekeeper.variable_handlers import VariableHandler
 
-DEFAULT_VARIABLE_TYPE = 'url_param'
+DEFAULT_VARIABLE_TYPE = "url_param"
+
 
 def merge(var1, var2):
     """
@@ -21,12 +21,13 @@ def merge(var1, var2):
     where such becomes necessary.
     """
     out = {}
-    out['value'] = var2.get('value', var1.get('value', None))
-    out['mimetype'] = var2.get('mimetype', var1.get('mimetype', None))
-    out['types'] = var2.get('types') + [x for x in var1.get('types') if x not in var2.get('types')]
-    out['optional'] = var2.get('optional', var1.get('optional', False))
-    out['filename'] = var2.get('filename', var2.get('filename', None))
+    out["value"] = var2.get("value", var1.get("value", None))
+    out["mimetype"] = var2.get("mimetype", var1.get("mimetype", None))
+    out["types"] = var2.get("types") + [x for x in var1.get("types") if x not in var2.get("types")]
+    out["optional"] = var2.get("optional", var1.get("optional", False))
+    out["filename"] = var2.get("filename", var2.get("filename", None))
     return Variable(var1.default_type, **out)
+
 
 class Variable(dict):
 
@@ -38,9 +39,9 @@ class Variable(dict):
 
     def __init__(self, default_type, **kwargs):
         self.default_type = default_type
-        kwargs['types'] = kwargs.get('types', [])
-        if not kwargs['types'] and kwargs.get('type', False):
-            kwargs['types'].append(kwargs.pop('type'))
+        kwargs["types"] = kwargs.get("types", [])
+        if not kwargs["types"] and kwargs.get("type", False):
+            kwargs["types"].append(kwargs.pop("type"))
         dict.__init__(self, **kwargs)
 
     def __getitem__(self, key):
@@ -76,7 +77,7 @@ class Variable(dict):
         """
         Does the variable have a value, or is it optional?
         """
-        if self.has_value() or self.get('optional', False):
+        if self.has_value() or self.get("optional", False):
             return True
         return False
 
@@ -94,7 +95,7 @@ class Variable(dict):
         """
         Does the variable have a value?
         """
-        if self.get('value', None) is not None:
+        if self.get("value", None) is not None:
             return True
         return False
 
@@ -111,7 +112,7 @@ class Variable(dict):
         """
         Return a list of the types the variable can be.
         """
-        for each in self['types']:
+        for each in self["types"]:
             yield each
         if self.has_no_type():
             yield self.default_type
@@ -120,9 +121,10 @@ class Variable(dict):
         """
         Does the Variable have a defined type?
         """
-        if self['types'] == []:
+        if self["types"] == []:
             return True
         return False
+
 
 class Variables(dict):
 
@@ -131,15 +133,15 @@ class Variables(dict):
     """
 
     def __init__(self, **kwargs):
-        self.settings = kwargs.pop('variable_settings', {})
-        self.default_type = self.settings.get('default_type', DEFAULT_VARIABLE_TYPE)
+        self.settings = kwargs.pop("variable_settings", {})
+        self.default_type = self.settings.get("default_type", DEFAULT_VARIABLE_TYPE)
         self.assert_type_handling()
         dict.__init__(self)
         self.add(**kwargs)
 
     def assert_type_handling(self):
         unhandleable = []
-        for name in self.settings.get('custom_types', {}):
+        for name in self.settings.get("custom_types", {}):
             if name not in VariableHandler.registry:
                 unhandleable.append(name)
         if len(unhandleable) > 0:
@@ -156,7 +158,7 @@ class Variables(dict):
         Get a list of the variables that are defined, but not required
         """
         for name, var in self.items():
-            if var.get('optional', False):
+            if var.get("optional", False):
                 yield name
 
     def required_namestring(self):
@@ -164,7 +166,7 @@ class Variables(dict):
         Compose a string showing the required variables (helper for the
         API printing function)
         """
-        return ', '.join(self.required_names())
+        return ", ".join(self.required_names())
 
     def optional_namestring(self):
         """
@@ -173,9 +175,9 @@ class Variables(dict):
         """
         opt_names = list(self.optional_names())
         if opt_names:
-            return '[, {}]'.format(', '.join(opt_names))
+            return "[, {}]".format(", ".join(opt_names))
         else:
-            return ''
+            return ""
 
     def types(self):
         """
@@ -202,8 +204,8 @@ class Variables(dict):
         """
         for name, var in kwargs.items():
             if iskeyword(name):
-                var['name'] = name
-                name = '_' + name
+                var["name"] = name
+                name = "_" + name
             if name in self:
                 self[name] = merge(self[name], Variable(self.default_type, **var))
             else:
@@ -234,7 +236,7 @@ class Variables(dict):
         full, but ISN'T.
         """
         if self.missing_vars():
-            raise TypeError('Expected values for variables: {}'.format(self.required_namestring()))
+            raise TypeError("Expected values for variables: {}".format(self.required_namestring()))
 
     def fill(self, *args, **kwargs):
         """
@@ -251,7 +253,7 @@ class Variables(dict):
         Set the value of the variable with the given name.
         """
         if varname in self:
-            self[varname]['value'] = value
+            self[varname]["value"] = value
         else:
             self[varname] = Variable(self.default_type, value=value)
 
