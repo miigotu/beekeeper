@@ -7,11 +7,12 @@ with open('requirements.txt') as req_file:
     requirements = req_file.read().splitlines()
 
 setup(
-    name = "beekeeper",
+    name = "beekeeper-alt",
     version = "0.9.2",
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
-    author_email = "jesse@bedrockdata.com",
+    maintainer = "Dustyn Gibson",
+    author_email = "miigotu@gmail.com",
     long_description = readme,
     keywords = "REST API web client wrapper",
     url = "https://github.com/haikuginger/beekeeper",
@@ -28,6 +29,10 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Internet",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development :: Libraries",
