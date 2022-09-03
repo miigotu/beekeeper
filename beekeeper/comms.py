@@ -2,7 +2,6 @@
 Provides classes and methods related to communicating with the remote API
 """
 
-from __future__ import division
 
 import functools
 import http.client as httplib

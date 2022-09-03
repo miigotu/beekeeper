@@ -2,15 +2,10 @@
 Provides the Hive class to work with JSON hive files, both remotely
 retrieved and opened from a local file
 """
-from __future__ import division
-
-try:
-    from urllib2 import URLError
-except ImportError:
-    from urllib.error import URLError
 
 import json
 import os
+from urllib.error import URLError
 
 from beekeeper.comms import download_as_json, ResponseException
 from beekeeper.exceptions import HiveLoadedOverHTTP, MissingHive, VersionNotInHive

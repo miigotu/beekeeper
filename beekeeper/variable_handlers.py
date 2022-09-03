@@ -7,10 +7,8 @@ argument, and does its work by calling one of the variable-setting
 methods on rq.
 """
 
-from __future__ import division
 
 from base64 import b64encode
-from functools import partial
 from uuid import uuid4
 
 from beekeeper.data_handlers import encode

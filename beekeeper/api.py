@@ -3,8 +3,6 @@ This module contains all the beekeeper classes that are used on the front end
 to directly interface between the developer and the remote API.
 """
 
-from __future__ import division
-
 import copy
 from functools import partial
 from keyword import iskeyword

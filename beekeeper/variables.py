@@ -2,10 +2,8 @@
 Provides methods and classes that handle working with variables
 """
 
-from __future__ import division
 
 from copy import deepcopy
-from functools import partial
 from keyword import iskeyword
 
 from beekeeper.exceptions import CannotHandleVariableTypes

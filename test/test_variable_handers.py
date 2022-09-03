@@ -9,6 +9,7 @@ class VariableReceiver(object):
     def execute(self, var_type, **kwargs):
         render(self, var_type, **kwargs)
 
+    # noinspection PyUnresolvedReferences
     def receive(self, expected, *args, **kwargs):
         if isinstance(expected, list):
             if kwargs:

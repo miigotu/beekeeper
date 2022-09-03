@@ -7,16 +7,11 @@ have a generic "run" method that directs requests
 passed to it to the correct format-specific method.
 """
 
-from __future__ import division
-
-try:
-    from urllib import urlencode
-except ImportError:
-    from urllib.parse import urlencode
 
 import json
 import json.decoder
 from functools import partial
+from urllib.parse import urlencode
 
 import xmltodict
 
@@ -90,11 +85,13 @@ class PlainText(DataHandler):
 class Binary(DataHandler):
     mimetypes = ["application/octet-stream"]
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def dump(python_object, encoding):
         if python_object:
             return python_object
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def load(response, encoding):
         return response
